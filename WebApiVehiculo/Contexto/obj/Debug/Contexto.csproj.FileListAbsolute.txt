@@ -1,0 +1,6 @@
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Contexto\bin\Debug\Contexto.dll
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Contexto\bin\Debug\Contexto.pdb
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Contexto\obj\Debug\Contexto.csprojAssemblyReference.cache
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Contexto\obj\Debug\Contexto.csproj.CoreCompileInputs.cache
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Contexto\obj\Debug\Contexto.dll
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Contexto\obj\Debug\Contexto.pdb

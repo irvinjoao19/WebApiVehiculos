@@ -1,0 +1,9 @@
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\bin\Debug\Negocio.dll
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\bin\Debug\Negocio.pdb
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\bin\Debug\Contexto.dll
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\bin\Debug\Contexto.pdb
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\obj\Debug\Negocio.csprojAssemblyReference.cache
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\obj\Debug\Negocio.csproj.CoreCompileInputs.cache
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\obj\Debug\Negocio.csproj.CopyComplete
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\obj\Debug\Negocio.dll
+D:\VISUAL\ProyectoDsigeVehiculo\WebApiVehiculo\Negocio\obj\Debug\Negocio.pdb
