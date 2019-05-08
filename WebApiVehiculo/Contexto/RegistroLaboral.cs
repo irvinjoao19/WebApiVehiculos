@@ -8,6 +8,7 @@ namespace Contexto
 {
     public class RegistroLaboral
     {
+        public int id { get; set; }
         public int registroId { get; set; }
         public int usuarioId { get; set; }
         public int empresaId { get; set; }

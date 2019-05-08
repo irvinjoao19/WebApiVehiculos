@@ -15,7 +15,85 @@ namespace Negocio
 
         private static string db = ConfigurationManager.ConnectionStrings["conexionDsige"].ConnectionString;
 
-        public static Migracion GetMigracion()
+        public static Usuario GetLogin(Filtro f)
+        {
+            try
+            {
+                Usuario u = null;
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_Login";
+                    cmd.Parameters.Add("@usuario", SqlDbType.VarChar).Value = f.login;
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        while (dr.Read())
+                        {
+                            u = new Usuario();
+
+                            if (f.pass == dr.GetString(1))
+                            {
+                                u.login = dr.GetString(0);
+                                u.pass = dr.GetString(1);
+                                u.usuarioId = dr.GetInt32(2);
+                                u.nroDocumento = dr.GetString(3);
+                                u.apellidos = dr.GetString(4);
+                                u.nombre = dr.GetString(5);
+                                u.email = dr.GetString(6);
+                                u.perfilId = dr.GetInt32(7);
+                                u.fotoUrl = dr.GetString(8);
+                                u.estado = dr.GetInt32(9);
+
+                                SqlCommand cmdE = con.CreateCommand();
+                                cmdE.CommandTimeout = 0;
+                                cmdE.CommandType = CommandType.StoredProcedure;
+                                cmdE.CommandText = "Dsige_Login_Acceso";
+                                cmdE.Parameters.Add("@usuario", SqlDbType.VarChar).Value = f.login;
+
+                                SqlDataReader drE = cmdE.ExecuteReader();
+                                if (drE.HasRows)
+                                {
+                                    List<Empresa> empresa = new List<Empresa>();
+
+                                    while (drE.Read())
+                                    {
+                                        Empresa e = new Empresa();
+                                        e.usuarioId = drE.GetInt32(0);
+                                        e.empresaId = drE.GetInt32(1);
+                                        e.ruc = drE.GetString(2);
+                                        e.nombreEmpresa = drE.GetString(3);
+                                        e.logoEmpresa = drE.GetString(4);
+
+                                        empresa.Add(e);
+                                    }
+
+                                    u.empresas = empresa;
+                                }
+                            }
+                            else
+                            {
+                                u.pass = "Error";
+                            }
+                        }
+                    }
+                    con.Close();
+                }
+
+                return u;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public static Migracion GetMigracion(Filtro f)
         {
             try
             {
@@ -31,11 +109,9 @@ namespace Negocio
                     cmd.CommandTimeout = 0;
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.CommandText = "DSIGE_Tbl_Vehiculos_Listar";
-                    cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = 1;
-                    cmd.Parameters.Add("@Local", SqlDbType.Int).Value = 1;
-                    cmd.Parameters.Add("@Tipo", SqlDbType.Int).Value = 1;
-                    cmd.Parameters.Add("@Estado", SqlDbType.Int).Value = 1;
-                    cmd.Parameters.Add("@Usuario", SqlDbType.Int).Value = 1;
+                    cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = f.empresaId;
+                    cmd.Parameters.Add("@Estado", SqlDbType.Int).Value = f.estado;
+                    cmd.Parameters.Add("@Usuario", SqlDbType.Int).Value = f.usuarioId;
 
                     SqlDataReader dr = cmd.ExecuteReader();
                     if (dr.HasRows)
@@ -268,7 +344,7 @@ namespace Negocio
                             cmd.Parameters.Add("@id_Registro_Combustible", SqlDbType.Int).Value = r.registroId;
                             cmd.Parameters.Add("@kmActual_Registro_Combustible", SqlDbType.Decimal).Value = r.km;
                             cmd.Parameters.Add("@fechaemision_registro_combustible", SqlDbType.VarChar).Value = r.fecha;
-                            cmd.Parameters.Add("@fechaemision_registro_combustible", SqlDbType.VarChar).Value = r.fechaAtencion;
+                            cmd.Parameters.Add("@fechaAtencion_Registro_Combustible", SqlDbType.VarChar).Value = r.fechaAtencion;
                             cmd.Parameters.Add("@id_Combustible", SqlDbType.Int).Value = r.tipoCombustibleId;
                             cmd.Parameters.Add("@cantidad_Registro_Combustible", SqlDbType.Int).Value = r.cantidadGalones;
                             cmd.Parameters.Add("@full_Registro_Combustible", SqlDbType.Int).Value = r.full;
@@ -281,7 +357,8 @@ namespace Negocio
                                 m = new Mensaje();
                                 while (dr.Read())
                                 {
-                                    m.codigo = dr.GetInt32(0);
+                                    m.codigoBase = r.id;
+                                    m.codigoRetorno = dr.GetInt32(0);
                                     m.mensaje = "Guardado";
                                 }
                             }
@@ -308,7 +385,8 @@ namespace Negocio
                                 m = new Mensaje();
                                 while (dr.Read())
                                 {
-                                    m.codigo = dr.GetInt32(0);
+                                    m.codigoBase = r.id;
+                                    m.codigoRetorno = dr.GetInt32(0);
                                     m.mensaje = "Guardado";
                                 }
                             }
@@ -322,6 +400,7 @@ namespace Negocio
                             cmd.CommandText = "Movil_InsertarEditar_Registro_Labores";
                             cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = r.usuarioId;
                             cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = r.empresaId;
+                            cmd.Parameters.Add("@Estado", SqlDbType.Int).Value = r.estado;
                             cmd.Parameters.Add("@id_Registro_Labores", SqlDbType.Int).Value = r.registroId;
                             cmd.Parameters.Add("@id_TipoRegistro_Labores", SqlDbType.Int).Value = r.tipoRegistro;
                             cmd.Parameters.Add("@id_Vehiculo", SqlDbType.Int).Value = r.vehiculoId;
@@ -337,7 +416,8 @@ namespace Negocio
                                 m = new Mensaje();
                                 while (dr.Read())
                                 {
-                                    m.codigo = dr.GetInt32(0);
+                                    m.codigoBase = r.id;
+                                    m.codigoRetorno = dr.GetInt32(0);
                                     m.mensaje = "Guardado";
                                 }
                             }
@@ -417,5 +497,113 @@ namespace Negocio
                 throw e;
             }
         }
+
+        public static List<BandejaRegistro> GetBandejaRegistrosPlaca(Filtro f)
+        {
+            try
+            {
+
+                List<BandejaRegistro> bandeja = null;
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_Bandeja_Registro_Combustible_Placa";
+                    cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = f.empresaId;
+                    cmd.Parameters.Add("@Usuario", SqlDbType.Int).Value = f.usuarioId;
+                    cmd.Parameters.Add("@Estado", SqlDbType.Int).Value = f.estado;
+                    cmd.Parameters.Add("@pageIndex", SqlDbType.Int).Value = f.pageIndex;
+                    cmd.Parameters.Add("@pageSize", SqlDbType.Int).Value = f.pageSize;
+                    cmd.Parameters.Add("@id_vehiculo", SqlDbType.Int).Value = f.vehiculoId;
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        bandeja = new List<BandejaRegistro>();
+                        while (dr.Read())
+                        {
+                            BandejaRegistro b = new BandejaRegistro();
+
+                            b.registroCombustibleId = dr.GetInt32(0);
+                            b.vehiculoId = dr.GetInt32(1);
+                            b.empresaId = dr.GetInt32(2);
+                            b.nroPlacaVehiculo = dr.GetString(3);
+                            b.anioVehiculo = Convert.ToDecimal(dr.GetDecimal(4));
+                            b.nombreMarca = dr.GetString(5);
+                            b.imagenMarca = dr.GetString(6);
+                            b.nombreModelo = dr.GetString(7);
+                            b.fechaAtencion = dr.GetDateTime(8).ToString("dd/MM/yyyy HH:mm:ss");
+                            b.cantidadRegistro = Convert.ToDecimal(dr.GetDecimal(9));
+                            b.fullRegistro = dr.GetString(10);
+                            b.nombreCombustible = dr.GetString(11);
+                            b.estado = dr.GetInt32(12);
+                            b.abreviaturaEstado = dr.GetString(13);
+                            b.colorEstado = dr.GetString(14);
+                            b.nroVoucher = dr.GetString(15);
+                            b.fechaEmision = dr.GetDateTime(16).ToString("dd/MM/yyyy HH:mm:ss");
+                            b.km = Convert.ToDecimal(dr.GetDecimal(17));
+                            b.cantidadGalones = Convert.ToDecimal(dr.GetDecimal(18));
+                            b.precioVoucher = Convert.ToDecimal(dr.GetDecimal(19));
+                            b.fotoVoucher = dr.GetString(20);
+
+                            bandeja.Add(b);
+                        }
+                    }
+                    con.Close();
+                }
+
+                return bandeja;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
+        public static Mensaje UpdateEstado(Filtro f)
+        {
+            try
+            {
+                Mensaje m = null;
+
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_Registro_Combustible_ActualizarEstado";
+                    cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = f.usuarioId;
+                    cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = f.empresaId;
+                    cmd.Parameters.Add("@vehiculo", SqlDbType.Int).Value = f.vehiculoId;
+                    cmd.Parameters.Add("@estado", SqlDbType.Int).Value = f.estado;
+                    cmd.Parameters.Add("@id_Registro_Combustible", SqlDbType.Int).Value = f.registroId;
+                    
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        m = new Mensaje();
+                        while (dr.Read())
+                        {                          
+                            m.codigoRetorno = dr.GetInt32(0);
+                            m.mensaje = "Enviado";
+                        }
+                    }
+                                        
+                    con.Close();
+                }
+                
+                return m;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
     }
 }

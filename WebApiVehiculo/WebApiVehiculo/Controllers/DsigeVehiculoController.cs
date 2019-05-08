@@ -15,18 +15,27 @@ namespace WebApiVehiculo.Controllers
     public class DsigeVehiculoController : ApiController
     {
 
+
         [HttpPost]
-        [Route("api/Vehiculo/Migracion")]
-        public IHttpActionResult VehiculoList()
+        [Route("api/Vehiculo/Login")]
+        public IHttpActionResult Usuario(Filtro f)
         {
             try
             {
-                Migracion v = NegocioDao.GetMigracion();
-                if (v != null)
+                Usuario u = NegocioDao.GetLogin(f);
+                if (u != null)
                 {
-                    return Ok(v);
+                    if (u.pass == "Error")
+                    {
+                        return BadRequest("Contraseña Incorrecta");
+                    }
+                    else
+                    {
+                        return Ok(u);
+                    }
+
                 }
-                else return BadRequest("No hay vehiculos");
+                else return BadRequest("Usuario no existe");
             }
             catch (Exception e)
             {
@@ -34,6 +43,26 @@ namespace WebApiVehiculo.Controllers
             }
         }
 
+
+
+        [HttpPost]
+        [Route("api/Vehiculo/Migracion")]
+        public IHttpActionResult VehiculoList(Filtro f)
+        {
+            try
+            {
+                Migracion v = NegocioDao.GetMigracion(f);
+                if (v != null)
+                {
+                    return Ok(v);
+                }
+                else return BadRequest("No hay datos para esa empresa");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
 
         [HttpPost]
         [Route("api/Vehiculo/SaveVehiculo")]
@@ -47,7 +76,7 @@ namespace WebApiVehiculo.Controllers
                 Mensaje m = NegocioDao.SaveRegistroLaboral(p);
                 if (m != null)
                 {
-                    string path = HttpContext.Current.Server.MapPath($"~/fotos/{p.empresaId}");
+                    string path = HttpContext.Current.Server.MapPath($"~/fotos/{p.empresaId}/");
 
                     if (!Directory.Exists(path))
                     {
@@ -88,5 +117,44 @@ namespace WebApiVehiculo.Controllers
                 throw e;
             }
         }
+
+        [HttpPost]
+        [Route("api/Vehiculo/BandejaRegistroPlaca")]
+        public IHttpActionResult BandejaRegistroPlaca(Filtro f)
+        {
+            try
+            {
+                List<BandejaRegistro> bandeja = NegocioDao.GetBandejaRegistrosPlaca(f);
+                if (bandeja != null)
+                {
+                    return Ok(bandeja);
+                }
+                else return BadRequest("No hay resultados");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("api/Vehiculo/UpdateEstado")]
+        public IHttpActionResult UpdateEstado(Filtro f)
+        {
+            try
+            {
+                Mensaje m = NegocioDao.UpdateEstado(f);
+                if (m != null)
+                {
+                    return Ok(m);
+                }
+                else return BadRequest("Error");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+        
     }
 }
