@@ -155,6 +155,78 @@ namespace WebApiVehiculo.Controllers
                 throw e;
             }
         }
-        
+
+        [HttpPost]
+        [Route("api/Vehiculo/RegistroCombustible")]
+        public IHttpActionResult RegistroCombustible()
+        {          
+            try
+            {
+                var fotos = HttpContext.Current.Request.Files;
+                var json = HttpContext.Current.Request.Form["model"];
+                RegistroLaboral b = JsonConvert.DeserializeObject<RegistroLaboral>(json);
+                Mensaje m = NegocioDao.RegistroCombustible(b);
+                if (m != null)
+                {
+                    string path = HttpContext.Current.Server.MapPath($"~/fotos/{b.empresaId}/");
+
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    for (int i = 0; i < fotos.Count; i++)
+                    {
+                        string fileName = Path.GetFileName(fotos[i].FileName);
+                        fotos[i].SaveAs(path + fileName);
+                    }
+
+                    return Ok(m);
+                }
+                else return BadRequest("Error");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("api/Vehiculo/Historial")]
+        public IHttpActionResult Historial(Filtro f)
+        {
+            try
+            {
+                List<Historial> h = NegocioDao.GetHistorial(f);
+                if (h != null)
+                {
+                    return Ok(h);
+                }
+                else return BadRequest("No hay Historial.");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        [HttpPost]
+        [Route("api/Vehiculo/InicioFinLabores")]
+        public IHttpActionResult InicioFinLabores(Filtro f)
+        {
+            try
+            {
+                List<InicioFinLabores> i = NegocioDao.GetInicioFinLabores(f);
+                if (i != null)
+                {
+                    return Ok(i);
+                }
+                else return BadRequest("No hay datos.");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
     }
 }

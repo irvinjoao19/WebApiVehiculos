@@ -120,39 +120,103 @@ namespace Negocio
 
                         while (dr.Read())
                         {
-                            vehiculos.Add(new Vehiculo()
+                            Vehiculo v = new Vehiculo();
+
+                            v.vehiculoId = dr.GetInt32(0);
+                            v.empresaId = dr.GetInt32(1);
+                            v.nroPlaca = dr.GetString(2);
+                            v.color = dr.GetString(3);
+                            v.nroMotor = dr.GetString(4);
+                            v.nroChasis = dr.GetString(5);
+                            v.anioVehiculo = Convert.ToDecimal(dr.GetDecimal(6));
+                            v.cilidraje = Convert.ToDecimal(dr.GetDecimal(7));
+                            v.kmInicial = Convert.ToDecimal(dr.GetDecimal(8));
+                            v.kmMant = Convert.ToDecimal(dr.GetDecimal(9));
+                            v.dni = dr.GetString(10);
+                            v.ruc = dr.GetString(11);
+                            v.estado = dr.GetInt32(12);
+                            v.tipo = dr.GetInt32(17);
+                            v.marcaId = dr.GetInt32(18);
+                            v.modeloId = dr.GetInt32(19);
+                            v.categoriaId = dr.GetInt32(20);
+                            v.carroceriaId = dr.GetInt32(21);
+                            v.combustibleId = dr.GetInt32(22);
+                            v.localId = dr.GetInt32(23);
+                            v.nombreTipoVehiculo = dr.GetString(24);
+                            v.nombreMarca = dr.GetString(25);
+                            v.imagenMarca = dr.GetString(26);
+                            v.nombreModelo = dr.GetString(27);
+                            v.nombreCategoria = dr.GetString(28);
+                            v.nombreCarroceria = dr.GetString(29);
+                            v.nombreCombustible = dr.GetString(30);
+                            v.estadoAuto = dr.GetString(31);
+                            v.colorEstado = dr.GetString(32);
+                            v.nombreConductor = dr.GetString(33);
+
+                            SqlCommand cmdCabecera = con.CreateCommand();
+                            cmdCabecera.CommandTimeout = 0;
+                            cmdCabecera.CommandType = CommandType.StoredProcedure;
+                            cmdCabecera.CommandText = "Movil_List_CheckList_Cab";
+                            cmdCabecera.Parameters.Add("@usuario", SqlDbType.Int).Value = f.usuarioId;
+                            cmdCabecera.Parameters.Add("@empresa", SqlDbType.Int).Value = f.empresaId;
+                            cmdCabecera.Parameters.Add("@vehiculo", SqlDbType.Int).Value = v.vehiculoId;
+
+                            SqlDataReader head = cmdCabecera.ExecuteReader();
+                            if (head.HasRows)
                             {
-                                vehiculoId = dr.GetInt32(0),
-                                empresaId = dr.GetInt32(1),
-                                nroPlaca = dr.GetString(2),
-                                color = dr.GetString(3),
-                                nroMotor = dr.GetString(4),
-                                nroChasis = dr.GetString(5),
-                                anioVehiculo = Convert.ToDecimal(dr.GetDecimal(6)),
-                                cilidraje = Convert.ToDecimal(dr.GetDecimal(7)),
-                                kmInicial = Convert.ToDecimal(dr.GetDecimal(8)),
-                                kmMant = Convert.ToDecimal(dr.GetDecimal(9)),
-                                dni = dr.GetString(10),
-                                ruc = dr.GetString(11),
-                                estado = dr.GetInt32(12),
-                                tipo = dr.GetInt32(17),
-                                marcaId = dr.GetInt32(18),
-                                modeloId = dr.GetInt32(19),
-                                categoriaId = dr.GetInt32(20),
-                                carroceriaId = dr.GetInt32(21),
-                                combustibleId = dr.GetInt32(22),
-                                localId = dr.GetInt32(23),
-                                nombreTipoVehiculo = dr.GetString(24),
-                                nombreMarca = dr.GetString(25),
-                                imagenMarca = dr.GetString(26),
-                                nombreModelo = dr.GetString(27),
-                                nombreCategoria = dr.GetString(28),
-                                nombreCarroceria = dr.GetString(29),
-                                nombreCombustible = dr.GetString(30),
-                                estadoAuto = dr.GetString(31),
-                                colorEstado = dr.GetString(32),
-                                nombreConductor = dr.GetString(33)
-                            });
+                                List<CheckListCabecera> checkList = new List<CheckListCabecera>();
+
+                                while (head.Read())
+                                {
+
+                                    CheckListCabecera c = new CheckListCabecera();
+
+                                    c.checkListId = head.GetInt32(0);
+                                    c.numeroCheckList = head.GetString(1);
+                                    c.nroPlaca = head.GetString(2);
+                                    c.fecha = head.GetDateTime(3).ToString("dd/MM/yyyy HH:mm:ss");
+                                    c.turnoId = head.GetInt32(4);
+
+                                    SqlCommand cmdDetalle = con.CreateCommand();
+                                    cmdDetalle.CommandTimeout = 0;
+                                    cmdDetalle.CommandType = CommandType.StoredProcedure;
+                                    cmdDetalle.CommandText = "Movil_List_CheckList_Detalle";
+                                    cmdDetalle.Parameters.Add("@checkListId", SqlDbType.Int).Value = c.checkListId;
+
+                                    SqlDataReader body = cmdDetalle.ExecuteReader();
+                                    if (body.HasRows)
+                                    {
+                                        List<CheckListDetalle> detalles = new List<CheckListDetalle>();
+
+                                        while (body.Read())
+                                        {
+
+                                            CheckListDetalle d = new CheckListDetalle();
+
+                                            d.checkListDetalleId = body.GetInt32(0);
+                                            d.checkListId = body.GetInt32(1);
+                                            d.numeroCheckList = body.GetString(2);
+                                            d.fechaCheckList = body.GetDateTime(3).ToString("dd/MM/yyyy HH:mm:ss");
+                                            d.nroPlacaCheckList = body.GetString(4);
+                                            d.tipoVista = body.GetString(5);
+                                            d.nombreLado = body.GetString(6);
+                                            d.nombrePartes = body.GetString(7);
+                                            d.otrosCheckList = body.GetString(8);
+                                            d.observacionesCheckList = body.GetString(9);
+                                            d.fotoCheckList = body.GetString(10);                                             
+
+                                            detalles.Add(d);
+                                        }
+
+                                        c.detalles = detalles;
+                                    }
+                                    checkList.Add(c);
+                                }
+
+                                v.checkListCabeceras = checkList;
+                            }
+
+                            vehiculos.Add(v);
                         }
                         migracion.vehiculos = vehiculos;
                     }
@@ -161,7 +225,7 @@ namespace Negocio
                     cmdC.CommandTimeout = 0;
                     cmdC.CommandType = CommandType.StoredProcedure;
                     cmdC.CommandText = "Movil_List_Combustible";
-                    cmdC.Parameters.Add("@empresaId", SqlDbType.Int).Value = 1;
+                    cmdC.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
 
                     SqlDataReader drC = cmdC.ExecuteReader();
                     if (drC.HasRows)
@@ -187,7 +251,7 @@ namespace Negocio
                     cmdT.CommandTimeout = 0;
                     cmdT.CommandType = CommandType.StoredProcedure;
                     cmdT.CommandText = "Movil_List_TipoVehiculo";
-                    cmdT.Parameters.Add("@empresaId", SqlDbType.Int).Value = 1;
+                    cmdT.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
 
                     SqlDataReader drT = cmdT.ExecuteReader();
                     if (drT.HasRows)
@@ -263,7 +327,7 @@ namespace Negocio
                     cmdMa.CommandTimeout = 0;
                     cmdMa.CommandType = CommandType.StoredProcedure;
                     cmdMa.CommandText = "Movil_List_MarcaVehiculo";
-                    cmdMa.Parameters.Add("@empresaId", SqlDbType.Int).Value = 1;
+                    cmdMa.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
 
                     SqlDataReader drMa = cmdMa.ExecuteReader();
                     if (drMa.HasRows)
@@ -306,6 +370,30 @@ namespace Negocio
                             marcas.Add(m);
                         }
                         migracion.marcas = marcas;
+                    }
+
+
+                    SqlCommand cmdTur = con.CreateCommand();
+                    cmdTur.CommandTimeout = 0;
+                    cmdTur.CommandType = CommandType.StoredProcedure;
+                    cmdTur.CommandText = "Movil_List_Turnos";
+                    cmdTur.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+
+                    SqlDataReader drTur = cmdTur.ExecuteReader();
+                    if (drTur.HasRows)
+                    {
+                        List<Turno> turnos = new List<Turno>();
+                        while (drTur.Read())
+                        {
+                            turnos.Add(new Turno()
+                            {
+                                turnoId = drTur.GetInt32(0),
+                                empresaId = drTur.GetInt32(1),
+                                nombreTurno = drTur.GetString(2),
+                                estado = drTur.GetInt32(3)
+                            });
+                        }
+                        migracion.turnos = turnos;
                     }
 
                     con.Close();
@@ -363,36 +451,7 @@ namespace Negocio
                                 }
                             }
                         }
-                        else if (r.tipoRegistro == 5)
-                        {
-                            SqlCommand cmd = con.CreateCommand();
-                            cmd.CommandTimeout = 0;
-                            cmd.CommandType = CommandType.StoredProcedure;
-                            cmd.CommandText = "Movil_InsertarEditar_Registro_Combustible_Vaucher";
-                            cmd.Parameters.Add("@idRegistro", SqlDbType.Int).Value = r.registroId;
-                            cmd.Parameters.Add("@nro_voucher", SqlDbType.VarChar).Value = r.nroVoucher;
-                            cmd.Parameters.Add("@fecha_Emision_Voucher", SqlDbType.VarChar).Value = r.fechaDocumento;
-                            cmd.Parameters.Add("@km_Voucher", SqlDbType.Decimal).Value = r.km;
-                            cmd.Parameters.Add("@galones_Voucher", SqlDbType.Decimal).Value = r.cantidadGalones;
-                            cmd.Parameters.Add("@precio_Voucher", SqlDbType.Decimal).Value = r.precio;
-                            cmd.Parameters.Add("@foto_Voucher", SqlDbType.VarChar).Value = r.fotoRegistro;
-                            cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = r.usuarioId;
-                            cmd.Parameters.Add("@fecha_creacion_voucher", SqlDbType.VarChar).Value = r.fecha;
-
-                            SqlDataReader dr = cmd.ExecuteReader();
-                            if (dr.HasRows)
-                            {
-                                m = new Mensaje();
-                                while (dr.Read())
-                                {
-                                    m.codigoBase = r.id;
-                                    m.codigoRetorno = dr.GetInt32(0);
-                                    m.mensaje = "Guardado";
-                                }
-                            }
-
-                        }
-                        else
+                        else if (r.tipoRegistro != 5 || r.tipoRegistro != 4)
                         {
                             SqlCommand cmd = con.CreateCommand();
                             cmd.CommandTimeout = 0;
@@ -421,7 +480,6 @@ namespace Negocio
                                     m.mensaje = "Guardado";
                                 }
                             }
-
                         }
                     }
                     con.Close();
@@ -581,22 +639,198 @@ namespace Negocio
                     cmd.Parameters.Add("@vehiculo", SqlDbType.Int).Value = f.vehiculoId;
                     cmd.Parameters.Add("@estado", SqlDbType.Int).Value = f.estado;
                     cmd.Parameters.Add("@id_Registro_Combustible", SqlDbType.Int).Value = f.registroId;
-                    
+
                     SqlDataReader dr = cmd.ExecuteReader();
                     if (dr.HasRows)
                     {
                         m = new Mensaje();
                         while (dr.Read())
-                        {                          
+                        {
                             m.codigoRetorno = dr.GetInt32(0);
                             m.mensaje = "Enviado";
                         }
                     }
-                                        
+
                     con.Close();
                 }
-                
+
                 return m;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
+        public static Mensaje RegistroCombustible(RegistroLaboral r)
+        {
+            try
+            {
+                Mensaje m = null;
+
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_InsertarEditar_Registro_Combustible_Vaucher";
+                    cmd.Parameters.Add("@idRegistro", SqlDbType.Int).Value = r.registroId;
+                    cmd.Parameters.Add("@nro_voucher", SqlDbType.VarChar).Value = r.nroVoucher;
+                    cmd.Parameters.Add("@fecha_Emision_Voucher", SqlDbType.VarChar).Value = r.fechaDocumento;
+                    cmd.Parameters.Add("@km_Voucher", SqlDbType.Decimal).Value = r.km;
+                    cmd.Parameters.Add("@galones_Voucher", SqlDbType.Decimal).Value = r.cantidadGalones;
+                    cmd.Parameters.Add("@precio_Voucher", SqlDbType.Decimal).Value = r.precio;
+                    cmd.Parameters.Add("@foto_Voucher", SqlDbType.VarChar).Value = r.fotoRegistro;
+                    cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = r.usuarioId;
+                    cmd.Parameters.Add("@empresa", SqlDbType.Int).Value = r.empresaId;
+                    cmd.Parameters.Add("@fecha_creacion_voucher", SqlDbType.VarChar).Value = r.fecha;
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        m = new Mensaje();
+                        while (dr.Read())
+                        {
+                            m.codigoBase = r.id;
+                            m.codigoRetorno = dr.GetInt32(0);
+                            m.mensaje = "Guardado";
+                        }
+                    }
+
+                    con.Close();
+                }
+
+                return m;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
+        public static List<Historial> GetHistorial(Filtro f)
+        {
+            try
+            {
+                List<Historial> historial = null;
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_Registro_Combustible_HistoricoXplaca";
+                    cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = f.empresaId;
+                    cmd.Parameters.Add("@Usuario", SqlDbType.VarChar).Value = f.usuarioId;
+                    cmd.Parameters.Add("@Estado", SqlDbType.VarChar).Value = f.estado;
+                    cmd.Parameters.Add("@id_vehiculo", SqlDbType.Decimal).Value = f.vehiculoId;
+
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        historial = new List<Historial>();
+                        while (dr.Read())
+                        {
+                            Historial h = new Historial();
+                            h.historialId = dr.GetInt32(0);
+                            h.fecha = dr.GetString(1);
+                            h.km = Convert.ToDecimal(dr.GetDecimal(2));
+                            h.combustible = dr.GetString(3);
+                            h.cantidad = Convert.ToDecimal(dr.GetDecimal(4));
+                            h.precio = Convert.ToDecimal(dr.GetDecimal(5));
+                            h.total = Convert.ToDecimal(dr.GetDecimal(6));
+                            historial.Add(h);
+                        }
+                    }
+
+                    con.Close();
+                }
+
+                return historial;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
+        public static List<InicioFinLabores> GetInicioFinLabores(Filtro f)
+        {
+            try
+            {
+
+                List<InicioFinLabores> inicioFin = null;
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_Listar_InicioTemino_LaboresXFiltros";
+                    cmd.Parameters.Add("@Empresa", SqlDbType.Int).Value = f.empresaId;
+                    cmd.Parameters.Add("@Usuario", SqlDbType.Int).Value = f.usuarioId;
+                    cmd.Parameters.Add("@Fecha", SqlDbType.VarChar).Value = f.fecha;
+                    cmd.Parameters.Add("@Filtro", SqlDbType.VarChar).Value = f.filtro;
+                    cmd.Parameters.Add("@TipoData", SqlDbType.VarChar).Value = "Cabecera";
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        inicioFin = new List<InicioFinLabores>();
+                        while (dr.Read())
+                        {
+                            InicioFinLabores i = new InicioFinLabores();
+
+                            i.vehiculoId = dr.GetInt32(0);
+                            i.nroPlaca = dr.GetString(1);
+                            i.anioVehiculo = Convert.ToDecimal(dr.GetDecimal(2));
+                            i.nombreMarca = dr.GetString(3);
+                            i.imagenMarca = dr.GetString(4);
+                            i.nombreModelo = dr.GetString(5);
+                            i.totalKm = Convert.ToDecimal(dr.GetDecimal(6));
+                            i.rendimiento = Convert.ToDecimal(dr.GetDecimal(7));
+
+                            SqlCommand cmdD = con.CreateCommand();
+                            cmdD.CommandTimeout = 0;
+                            cmdD.CommandType = CommandType.StoredProcedure;
+                            cmdD.CommandText = "Movil_Listar_InicioTemino_LaboresXFiltros";
+                            cmdD.Parameters.Add("@Empresa", SqlDbType.Int).Value = f.empresaId;
+                            cmdD.Parameters.Add("@Usuario", SqlDbType.Int).Value = f.usuarioId;
+                            cmdD.Parameters.Add("@Fecha", SqlDbType.VarChar).Value = f.fecha;
+                            cmdD.Parameters.Add("@Filtro", SqlDbType.VarChar).Value = f.filtro;
+                            cmdD.Parameters.Add("@TipoData", SqlDbType.VarChar).Value = "Detalle";
+                            SqlDataReader drD = cmdD.ExecuteReader();
+
+                            if (drD.HasRows)
+                            {
+                                List<InicioLaboresDetalle> detalle = new List<InicioLaboresDetalle>();
+                                while (drD.Read())
+                                {
+                                    InicioLaboresDetalle d = new InicioLaboresDetalle();
+                                    d.vehiculoId = drD.GetInt32(0);
+                                    d.registroId = drD.GetInt32(1);
+                                    d.nombre = drD.GetString(2);
+                                    d.fecha = drD.GetDateTime(3).ToString("dd/MM/yyyy");
+                                    d.km = Convert.ToDecimal(drD.GetDecimal(4));
+                                    detalle.Add(d);
+                                }
+                                i.detalles = detalle;
+                            }
+
+                            inicioFin.Add(i);
+                        }
+                    }
+                    con.Close();
+                }
+
+                return inicioFin;
             }
             catch (Exception e)
             {

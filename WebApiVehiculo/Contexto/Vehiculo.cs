@@ -8,7 +8,6 @@ namespace Contexto
 {
     public class Vehiculo
     {
-
         public int vehiculoId { get; set; }
         public int empresaId { get; set; }
         public string nroPlaca { get; set; }
@@ -39,8 +38,7 @@ namespace Contexto
         public string estadoAuto { get; set; }
         public string colorEstado { get; set; }
         public string nombreConductor { get; set; }
-
         public List<RegistroLaboral> registros { get; set; }
-
+        public List<CheckListCabecera> checkListCabeceras { get; set; }
     }
 }

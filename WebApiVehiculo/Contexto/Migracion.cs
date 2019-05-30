@@ -12,5 +12,6 @@ namespace Contexto
         public List<Combustible> combustibles { get; set; }
         public List<Tipo> tipos { get; set; }
         public List<Marca> marcas { get; set; }
+        public List<Turno> turnos { get; set; }
     }
 }

@@ -24,11 +24,10 @@ namespace Contexto
         public string fechaAtencion { get; set; }
         public int tipoCombustibleId { get; set; }
         public string nombreCombustible { get; set; }
-        public int cantidadGalones { get; set; }
+        public double cantidadGalones { get; set; }
         public int full { get; set; }
-
         public string nroVoucher { get; set; }
-        public int precio { get; set; }
+        public double precio { get; set; }
         public double total { get; set; }
         public string fechaDocumento { get; set; }
 

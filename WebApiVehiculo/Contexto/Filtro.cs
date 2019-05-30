@@ -18,6 +18,8 @@ namespace Contexto
         public int vehiculoId { get; set; }
         public string login { get; set; }
         public string pass { get; set; }
+        public string fecha { get; set; }
+        public string filtro { get; set; }
 
     }
 }
