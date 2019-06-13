@@ -16,7 +16,7 @@ namespace Contexto
         public string nombreTipoRegistro { get; set; }
         public int vehiculoId { get; set; }
         public string fecha { get; set; }
-        public double km { get; set; }
+        public decimal km { get; set; }
         public string fotoRegistro { get; set; }
         public string nroOrdenRegistro { get; set; }
         public string observaciones { get; set; }
@@ -24,7 +24,7 @@ namespace Contexto
         public string fechaAtencion { get; set; }
         public int tipoCombustibleId { get; set; }
         public string nombreCombustible { get; set; }
-        public double cantidadGalones { get; set; }
+        public decimal cantidadGalones { get; set; }
         public int full { get; set; }
         public string nroVoucher { get; set; }
         public double precio { get; set; }

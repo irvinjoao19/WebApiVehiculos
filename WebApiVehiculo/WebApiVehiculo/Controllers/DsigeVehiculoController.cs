@@ -41,9 +41,7 @@ namespace WebApiVehiculo.Controllers
             {
                 throw e;
             }
-        }
-
-
+        }        
 
         [HttpPost]
         [Route("api/Vehiculo/Migracion")]
@@ -73,7 +71,7 @@ namespace WebApiVehiculo.Controllers
                 var fotos = HttpContext.Current.Request.Files;
                 var json = HttpContext.Current.Request.Form["model"];
                 Vehiculo p = JsonConvert.DeserializeObject<Vehiculo>(json);
-                Mensaje m = NegocioDao.SaveRegistroLaboral(p);
+               List<Mensaje> m = NegocioDao.SaveRegistroLaboral(p);
                 if (m != null)
                 {
                     string path = HttpContext.Current.Server.MapPath($"~/fotos/{p.empresaId}/");
@@ -228,5 +226,42 @@ namespace WebApiVehiculo.Controllers
                 throw e;
             }
         }
+
+
+        [HttpPost]
+        [Route("api/Vehiculo/RegistroCheckList")]
+        public IHttpActionResult RegistroCheckList()
+        {
+            try
+            {
+                var fotos = HttpContext.Current.Request.Files;
+                var json = HttpContext.Current.Request.Form["model"];
+                CheckListCabecera c = JsonConvert.DeserializeObject<CheckListCabecera>(json);
+                Mensaje m = NegocioDao.RegistroCheckList(c);
+                if (m != null)
+                {
+                    string path = HttpContext.Current.Server.MapPath($"~/fotos/{c.empresaId}/");
+
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    for (int i = 0; i < fotos.Count; i++)
+                    {
+                        string fileName = Path.GetFileName(fotos[i].FileName);
+                        fotos[i].SaveAs(path + fileName);
+                    }
+
+                    return Ok(m);
+                }
+                else return BadRequest("Error");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

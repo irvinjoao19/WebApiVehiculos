@@ -8,11 +8,16 @@ namespace Contexto
 {
     public class CheckListCabecera
     {
+        public int checkListCabeceraId { get; set; }
         public int checkListId { get; set; }
+        public int vehiculoId { get; set; }
         public string numeroCheckList { get; set; }
         public string nroPlaca { get; set; }
         public string fecha { get; set; }
         public int turnoId { get; set; }
+        public string nombreTurno { get; set; }
+        public int empresaId { get; set; }
+        public int usuarioId { get; set; }
         public List<CheckListDetalle> detalles { get; set; }
     }
 }

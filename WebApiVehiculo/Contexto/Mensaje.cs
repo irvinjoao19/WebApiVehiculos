@@ -11,5 +11,6 @@ namespace Contexto
         public int codigoBase { get; set; }
         public int codigoRetorno { get; set; }
         public string mensaje { get; set; }
+        public List<MensajeDetalle> detalle { get; set; }
     }
 }

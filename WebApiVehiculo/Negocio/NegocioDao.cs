@@ -69,7 +69,6 @@ namespace Negocio
                                         e.ruc = drE.GetString(2);
                                         e.nombreEmpresa = drE.GetString(3);
                                         e.logoEmpresa = drE.GetString(4);
-
                                         empresa.Add(e);
                                     }
 
@@ -153,6 +152,48 @@ namespace Negocio
                             v.colorEstado = dr.GetString(32);
                             v.nombreConductor = dr.GetString(33);
 
+                            SqlCommand cmdRL = con.CreateCommand();
+                            cmdRL.CommandTimeout = 0;
+                            cmdRL.CommandType = CommandType.StoredProcedure;
+                            cmdRL.CommandText = "Movil_List_Registros";
+                            cmdRL.Parameters.Add("@usuario", SqlDbType.Int).Value = f.usuarioId;
+                            cmdRL.Parameters.Add("@empresa", SqlDbType.Int).Value = f.empresaId;
+                            cmdRL.Parameters.Add("@vehiculoId", SqlDbType.Int).Value = v.vehiculoId;
+
+                            SqlDataReader drl = cmdRL.ExecuteReader();
+                            if (drl.HasRows)
+                            {
+                                List<RegistroLaboral> registros = new List<RegistroLaboral>();
+
+                                while (drl.Read())
+                                {
+                                    RegistroLaboral r = new RegistroLaboral();
+                                    r.id = drl.GetInt32(0);
+                                    r.registroId = drl.GetInt32(0);
+                                    r.empresaId = drl.GetInt32(1);
+                                    r.vehiculoId = drl.GetInt32(2);
+                                    r.estado = drl.GetInt32(3);
+                                    r.usuarioId = drl.GetInt32(4);
+                                    r.tipoRegistro = drl.GetInt32(5);
+                                    r.km = Convert.ToDecimal(drl.GetDecimal(6));
+                                    r.fecha = drl.GetDateTime(7).ToString("dd/MM/yyyy HH:mm");
+                                    r.fechaAtencion = drl.GetDateTime(8).ToString("dd/MM/yyyy HH:mm");
+                                    r.tipoCombustibleId = drl.GetInt32(9);
+                                    r.cantidadGalones = Convert.ToDecimal(drl.GetDecimal(10));
+                                    r.full = drl.GetInt32(11);
+                                    r.observaciones = drl.GetString(12);
+                                    r.fotoRegistro = drl.GetString(13);
+                                    r.nroOrdenRegistro = drl.GetString(14);
+                                    r.nombreTipoRegistro = drl.GetString(15);
+                                    r.nombreCombustible = drl.GetString(16);
+                                    r.nroVoucher = drl.GetString(17);
+                                    r.fechaDocumento = drl.GetString(18);
+                                    registros.Add(r);
+                                }
+
+                                v.registros = registros;
+                            }
+
                             SqlCommand cmdCabecera = con.CreateCommand();
                             cmdCabecera.CommandTimeout = 0;
                             cmdCabecera.CommandType = CommandType.StoredProcedure;
@@ -168,14 +209,17 @@ namespace Negocio
 
                                 while (head.Read())
                                 {
-
                                     CheckListCabecera c = new CheckListCabecera();
-
+                                    c.checkListCabeceraId = head.GetInt32(0);
                                     c.checkListId = head.GetInt32(0);
-                                    c.numeroCheckList = head.GetString(1);
-                                    c.nroPlaca = head.GetString(2);
-                                    c.fecha = head.GetDateTime(3).ToString("dd/MM/yyyy HH:mm:ss");
-                                    c.turnoId = head.GetInt32(4);
+                                    c.vehiculoId = head.GetInt32(1);
+                                    c.numeroCheckList = head.GetString(2);
+                                    c.nroPlaca = head.GetString(3);
+                                    c.fecha = head.GetDateTime(4).ToString("dd/MM/yyyy HH:mm:ss");
+                                    c.turnoId = head.GetInt32(5);
+                                    c.nombreTurno = head.GetString(6);
+                                    c.empresaId = head.GetInt32(7);
+                                    c.usuarioId = head.GetInt32(8);
 
                                     SqlCommand cmdDetalle = con.CreateCommand();
                                     cmdDetalle.CommandTimeout = 0;
@@ -190,21 +234,26 @@ namespace Negocio
 
                                         while (body.Read())
                                         {
-
                                             CheckListDetalle d = new CheckListDetalle();
 
+                                            d.detalleId = body.GetInt32(0);
                                             d.checkListDetalleId = body.GetInt32(0);
+                                            d.checkListCabeceraId = body.GetInt32(1);
                                             d.checkListId = body.GetInt32(1);
                                             d.numeroCheckList = body.GetString(2);
-                                            d.fechaCheckList = body.GetDateTime(3).ToString("dd/MM/yyyy HH:mm:ss");
+                                            //d.fechaCheckList = body.GetDateTime(3).ToString("dd/MM/yyyy HH:mm:ss");
+                                            d.fechaCheckList = body.GetDateTime(3).ToString("dd/MM/yyyy");
                                             d.nroPlacaCheckList = body.GetString(4);
                                             d.tipoVista = body.GetString(5);
                                             d.nombreLado = body.GetString(6);
                                             d.nombrePartes = body.GetString(7);
                                             d.otrosCheckList = body.GetString(8);
                                             d.observacionesCheckList = body.GetString(9);
-                                            d.fotoCheckList = body.GetString(10);                                             
-
+                                            d.fotoCheckList = body.GetString(10);
+                                            d.estadoIdCheckList = body.GetInt32(11);
+                                            d.estadoCheckList = body.GetString(12);
+                                            d.ladoVehiculoId = body.GetInt32(13);
+                                            d.ladoParteVehiculoId = body.GetInt32(14);
                                             detalles.Add(d);
                                         }
 
@@ -372,7 +421,6 @@ namespace Negocio
                         migracion.marcas = marcas;
                     }
 
-
                     SqlCommand cmdTur = con.CreateCommand();
                     cmdTur.CommandTimeout = 0;
                     cmdTur.CommandType = CommandType.StoredProcedure;
@@ -396,6 +444,103 @@ namespace Negocio
                         migracion.turnos = turnos;
                     }
 
+                    SqlCommand cmdEstado = con.CreateCommand();
+                    cmdEstado.CommandTimeout = 0;
+                    cmdEstado.CommandType = CommandType.StoredProcedure;
+                    cmdEstado.CommandText = "Movil_List_EstadoCheckList";
+                    cmdEstado.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+
+                    SqlDataReader drEstado = cmdEstado.ExecuteReader();
+                    if (drEstado.HasRows)
+                    {
+                        List<CheckListEstado> estados = new List<CheckListEstado>();
+                        while (drEstado.Read())
+                        {
+                            estados.Add(new CheckListEstado()
+                            {
+                                estadoCheckListId = drEstado.GetInt32(0),
+                                empresaId = drEstado.GetInt32(1),
+                                nombreCheckList = drEstado.GetString(2),
+                                solicitudComentario = drEstado.GetInt32(3),
+                                estado = drEstado.GetInt32(4)
+                            });
+                        }
+                        migracion.estados = estados;
+                    }
+
+                    SqlCommand cmdLado = con.CreateCommand();
+                    cmdLado.CommandTimeout = 0;
+                    cmdLado.CommandType = CommandType.StoredProcedure;
+                    cmdLado.CommandText = "Movil_List_LadoVehiculo";
+                    cmdLado.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+
+                    SqlDataReader drLado = cmdLado.ExecuteReader();
+                    if (drLado.HasRows)
+                    {
+                        List<LadoVehiculo> lados = new List<LadoVehiculo>();
+                        while (drLado.Read())
+                        {
+
+                            LadoVehiculo l = new LadoVehiculo();
+                            l.ladoVehiculoId = drLado.GetInt32(0);
+                            l.empresaId = drLado.GetInt32(1);
+                            l.tipoVista = drLado.GetString(2);
+                            l.nombreLado = drLado.GetString(3);
+                            l.estado = drLado.GetInt32(4);
+
+                            SqlCommand cmdParte = con.CreateCommand();
+                            cmdParte.CommandTimeout = 0;
+                            cmdParte.CommandType = CommandType.StoredProcedure;
+                            cmdParte.CommandText = "Movil_List_ParteVehiculo";
+                            cmdParte.Parameters.Add("@ladoVehiculoId", SqlDbType.Int).Value = l.ladoVehiculoId;
+
+                            SqlDataReader drParte = cmdParte.ExecuteReader();
+                            if (drParte.HasRows)
+                            {
+                                List<LadoParteVehiculo> partes = new List<LadoParteVehiculo>();
+                                while (drParte.Read())
+                                {
+                                    partes.Add(new LadoParteVehiculo()
+                                    {
+                                        ladoparteVehiculoId = drParte.GetInt32(0),
+                                        ladoVehiculoId = drParte.GetInt32(1),
+                                        nombreLado = drParte.GetString(2),
+                                        partesVehiculoId = drParte.GetInt32(3),
+                                        nombrePartesVehiculo = drParte.GetString(4)
+                                    });
+                                }
+
+                                l.parteVehiculos = partes;
+                            }
+
+                            lados.Add(l);
+                        }
+                        migracion.ladoVehiculos = lados;
+                    }
+
+                    SqlCommand cmdProveedor = con.CreateCommand();
+                    cmdProveedor.CommandTimeout = 0;
+                    cmdProveedor.CommandType = CommandType.StoredProcedure;
+                    cmdProveedor.CommandText = "Movil_List_Proveedor";
+                    cmdProveedor.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+                    SqlDataReader drProveedor = cmdProveedor.ExecuteReader();
+                    if (drProveedor.HasRows)
+                    {
+                        List<Proveedor> proveedores = new List<Proveedor>();
+
+                        while (drProveedor.Read())
+                        {
+                            proveedores.Add(new Proveedor()
+                            {
+                                proveedorId = drProveedor.GetInt32(0),
+                                empresaId = drProveedor.GetInt32(1),
+                                ruc  = drProveedor.GetString(2),
+                                razonSocial = drProveedor.GetString(3)
+                            });
+                        }
+                        migracion.proveedores = proveedores;
+                    }
+
                     con.Close();
                 }
                 return migracion;
@@ -406,19 +551,20 @@ namespace Negocio
             }
         }
 
-        public static Mensaje SaveRegistroLaboral(Vehiculo v)
+        public static List<Mensaje> SaveRegistroLaboral(Vehiculo v)
         {
             try
             {
-                Mensaje m = null;
+                List<Mensaje> m = null;
 
                 using (SqlConnection con = new SqlConnection(db))
                 {
                     con.Open();
 
+                    m = new List<Mensaje>();
+
                     foreach (var r in v.registros)
                     {
-
                         if (r.tipoRegistro == 4)
                         {
                             SqlCommand cmd = con.CreateCommand();
@@ -442,12 +588,14 @@ namespace Negocio
                             SqlDataReader dr = cmd.ExecuteReader();
                             if (dr.HasRows)
                             {
-                                m = new Mensaje();
                                 while (dr.Read())
                                 {
-                                    m.codigoBase = r.id;
-                                    m.codigoRetorno = dr.GetInt32(0);
-                                    m.mensaje = "Guardado";
+                                    m.Add(new Mensaje()
+                                    {
+                                        codigoBase = r.id,
+                                        codigoRetorno = dr.GetInt32(0),
+                                        mensaje = "Guardado"
+                                    });
                                 }
                             }
                         }
@@ -472,12 +620,14 @@ namespace Negocio
                             SqlDataReader dr = cmd.ExecuteReader();
                             if (dr.HasRows)
                             {
-                                m = new Mensaje();
                                 while (dr.Read())
                                 {
-                                    m.codigoBase = r.id;
-                                    m.codigoRetorno = dr.GetInt32(0);
-                                    m.mensaje = "Guardado";
+                                    m.Add(new Mensaje()
+                                    {
+                                        codigoBase = r.id,
+                                        codigoRetorno = dr.GetInt32(0),
+                                        mensaje = "Guardado"
+                                    });
                                 }
                             }
                         }
@@ -831,6 +981,87 @@ namespace Negocio
                 }
 
                 return inicioFin;
+            }
+            catch (Exception e)
+            {
+
+                throw e;
+            }
+        }
+
+        public static Mensaje RegistroCheckList(CheckListCabecera c)
+        {
+            try
+            {
+                Mensaje m = null;
+
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_InsertarEditar_CheckList_Cab";
+                    cmd.Parameters.Add("@id_CheckList", SqlDbType.Int).Value = c.checkListId;
+                    cmd.Parameters.Add("@numero_checkList", SqlDbType.VarChar).Value = c.numeroCheckList;
+                    cmd.Parameters.Add("@fecha_CheckList", SqlDbType.VarChar).Value = c.fecha;
+                    cmd.Parameters.Add("@turno", SqlDbType.Int).Value = c.turnoId;
+                    cmd.Parameters.Add("@empresa", SqlDbType.Int).Value = c.empresaId;
+                    cmd.Parameters.Add("@vehiculo", SqlDbType.Int).Value = c.vehiculoId;
+                    cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = c.usuarioId;
+                    cmd.Parameters.Add("@estado", SqlDbType.Int).Value = 1;
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        m = new Mensaje();
+                        while (dr.Read())
+                        {
+                            m.codigoBase = c.checkListCabeceraId;
+                            m.codigoRetorno = dr.GetInt32(0);
+                            m.mensaje = "Guardado";
+
+                            List<MensajeDetalle> detalle = new List<MensajeDetalle>();
+
+                            foreach (var d in c.detalles)
+                            {
+
+                                SqlCommand cmdD = con.CreateCommand();
+                                cmdD.CommandTimeout = 0;
+                                cmdD.CommandType = CommandType.StoredProcedure;
+                                cmdD.CommandText = "Movil_InsertarEditar_CheckList_Det";
+                                cmdD.Parameters.Add("@id_CheckList", SqlDbType.Int).Value = m.codigoRetorno;
+                                cmdD.Parameters.Add("@id_checklist_det", SqlDbType.Int).Value = d.checkListDetalleId;
+                                cmdD.Parameters.Add("@lado_Vehiculo", SqlDbType.Int).Value = d.ladoVehiculoId;
+                                cmdD.Parameters.Add("@partesLado_Vehiculo", SqlDbType.Int).Value = d.ladoParteVehiculoId;
+                                cmdD.Parameters.Add("@estado", SqlDbType.Int).Value = d.estadoIdCheckList;
+                                cmdD.Parameters.Add("@otros_checklist", SqlDbType.VarChar).Value = d.otrosCheckList;
+                                cmdD.Parameters.Add("@observacion_checklist_det", SqlDbType.VarChar).Value = d.observacionesCheckList;
+                                cmdD.Parameters.Add("@foto_checklist_det", SqlDbType.VarChar).Value = d.fotoCheckList;
+                                cmdD.Parameters.Add("@usuario", SqlDbType.Int).Value = c.usuarioId;
+
+                                SqlDataReader drD = cmdD.ExecuteReader();
+                                if (drD.HasRows)
+                                {
+                                    while (drD.Read())
+                                    {
+                                        detalle.Add(new MensajeDetalle()
+                                        {
+                                            detalleId = d.detalleId,
+                                            detalleRetornoId = drD.GetInt32(0)
+                                        });
+                                    }
+                                }
+                            }
+                            m.detalle = detalle;
+                        }
+                    }
+
+                    con.Close();
+                }
+
+                return m;
             }
             catch (Exception e)
             {
