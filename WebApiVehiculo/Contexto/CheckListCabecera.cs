@@ -18,6 +18,7 @@ namespace Contexto
         public string nombreTurno { get; set; }
         public int empresaId { get; set; }
         public int usuarioId { get; set; }
+        public int estado { get; set; }
         public List<CheckListDetalle> detalles { get; set; }
     }
 }

@@ -16,5 +16,7 @@ namespace Contexto
         public List<CheckListEstado> estados { get; set; }
         public List<LadoVehiculo> ladoVehiculos { get; set; }
         public List<Proveedor> proveedores { get; set; }
+        public List<Moneda> monedas { get; set; }
+        public List<TipoDocumento> documentos { get; set; }
     }
 }

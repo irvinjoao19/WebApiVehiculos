@@ -19,6 +19,7 @@ namespace Contexto
         public int estadoIdCheckList { get; set; }
         public string estadoCheckList { get; set; }
         public int ladoVehiculoId { get; set; }     
-        public int ladoParteVehiculoId { get; set; }     
+        public int ladoParteVehiculoId { get; set; }
+        public int empresaId { get; set; }
     }
 }

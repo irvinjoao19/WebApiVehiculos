@@ -220,6 +220,7 @@ namespace Negocio
                                     c.nombreTurno = head.GetString(6);
                                     c.empresaId = head.GetInt32(7);
                                     c.usuarioId = head.GetInt32(8);
+                                    c.estado = head.GetInt32(9);
 
                                     SqlCommand cmdDetalle = con.CreateCommand();
                                     cmdDetalle.CommandTimeout = 0;
@@ -254,6 +255,7 @@ namespace Negocio
                                             d.estadoCheckList = body.GetString(12);
                                             d.ladoVehiculoId = body.GetInt32(13);
                                             d.ladoParteVehiculoId = body.GetInt32(14);
+                                            d.empresaId = c.empresaId;
                                             detalles.Add(d);
                                         }
 
@@ -534,11 +536,55 @@ namespace Negocio
                             {
                                 proveedorId = drProveedor.GetInt32(0),
                                 empresaId = drProveedor.GetInt32(1),
-                                ruc  = drProveedor.GetString(2),
+                                ruc = drProveedor.GetString(2),
                                 razonSocial = drProveedor.GetString(3)
                             });
                         }
                         migracion.proveedores = proveedores;
+                    }
+
+                    SqlCommand cmdDocumentos = con.CreateCommand();
+                    cmdDocumentos.CommandTimeout = 0;
+                    cmdDocumentos.CommandType = CommandType.StoredProcedure;
+                    cmdDocumentos.CommandText = "Movil_List_TipoDocumento";
+                    SqlDataReader drDoc = cmdDocumentos.ExecuteReader();
+                    if (drDoc.HasRows)
+                    {
+                        List<TipoDocumento> documentos = new List<TipoDocumento>();
+
+                        while (drDoc.Read())
+                        {
+                            documentos.Add(new TipoDocumento()
+                            {
+                                tipoDocumentoId = drDoc.GetInt32(0),
+                                abreviatura = drDoc.GetString(1),
+                                nombre = drDoc.GetString(2)
+                            });
+                        }
+                        migracion.documentos = documentos;
+                    }
+
+                    SqlCommand cmdMoneda = con.CreateCommand();
+                    cmdMoneda.CommandTimeout = 0;
+                    cmdMoneda.CommandType = CommandType.StoredProcedure;
+                    cmdMoneda.CommandText = "Movil_List_Monedas";
+                    SqlDataReader drMon = cmdMoneda.ExecuteReader();
+                    if (drMon.HasRows)
+                    {
+                        List<Moneda> monedas = new List<Moneda>();
+
+                        while (drMon.Read())
+                        {
+                            monedas.Add(new Moneda()
+                            {
+
+                                monedaId = drMon.GetInt32(0),
+                                nombre = drMon.GetString(1),
+                                simbolo = drMon.GetString(2)
+
+                            });
+                        }
+                        migracion.monedas = monedas;
                     }
 
                     con.Close();
@@ -1066,6 +1112,99 @@ namespace Negocio
             catch (Exception e)
             {
 
+                throw e;
+            }
+        }
+
+        public static Mensaje SaveMantenimiento(MantenimientoGeneral m)
+        {
+            try
+            {
+                Mensaje mensaje = null;
+
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_InsertarEditar_Mantenimiento_Cab";
+                    cmd.Parameters.Add("@id_Mantenimiento", SqlDbType.Int).Value = m.mantenimientoId;
+                    cmd.Parameters.Add("@id_empresa", SqlDbType.Int).Value = m.empresaId;
+                    cmd.Parameters.Add("@id_tipoie", SqlDbType.VarChar).Value = m.tipoIE;
+                    cmd.Parameters.Add("@id_tipomantenimiento", SqlDbType.Int).Value = m.tipoMantenimientoId;
+                    cmd.Parameters.Add("@id_vehiculo", SqlDbType.Int).Value = m.vehiculoId;
+                    cmd.Parameters.Add("@numero_mant", SqlDbType.VarChar).Value = m.numeroMantenimiento;
+                    cmd.Parameters.Add("@fecha_mant", SqlDbType.VarChar).Value = m.fechaMantenimiento;
+                    cmd.Parameters.Add("@solicitadopor_mant", SqlDbType.VarChar).Value = m.solicitadoPor;
+                    cmd.Parameters.Add("@trabajo_mant", SqlDbType.VarChar).Value = m.trabajoMantenimiento;
+                    cmd.Parameters.Add("@ruc_proveedor_mant", SqlDbType.VarChar).Value = m.ruc;
+                    cmd.Parameters.Add("@fechainicial_mant", SqlDbType.VarChar).Value = m.fechaInicial;
+                    cmd.Parameters.Add("@fechafinal_mant", SqlDbType.VarChar).Value = m.fechaFinal;
+                    cmd.Parameters.Add("@kmmant", SqlDbType.Decimal).Value = m.km;
+                    cmd.Parameters.Add("@totalsoles_mant", SqlDbType.Decimal).Value = m.totalSoles;
+                    cmd.Parameters.Add("@totaldolares_mant", SqlDbType.Decimal).Value = m.totalDolares;
+                    cmd.Parameters.Add("@estado", SqlDbType.Int).Value = m.estado;
+                    cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = m.usuario;
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        mensaje = new Mensaje();
+                        while (dr.Read())
+                        {
+                            mensaje.codigoRetorno = dr.GetInt32(0);
+                            mensaje.mensaje = "Enviado";
+
+                            List<MensajeDetalle> detalle = new List<MensajeDetalle>();
+
+                            foreach (var d in m.detalles)
+                            {
+
+                                SqlCommand cmdD = con.CreateCommand();
+                                cmdD.CommandTimeout = 0;
+                                cmdD.CommandType = CommandType.StoredProcedure;
+                                cmdD.CommandText = "Movil_InsertarEditar_Mantenimiento_Det";
+                                cmdD.Parameters.Add("@id_Mantenimiento_Det", SqlDbType.Int).Value = d.mantenimientoDetalleId;
+                                cmdD.Parameters.Add("@id_Mantenimiento", SqlDbType.Int).Value = mensaje.codigoRetorno;
+                                cmdD.Parameters.Add("@id_tipodoc", SqlDbType.Int).Value = d.tipoDocumentoId;
+                                cmdD.Parameters.Add("@numerodoc_mant_det", SqlDbType.VarChar).Value = d.numeroDocumento;
+                                cmdD.Parameters.Add("@fecha_mant_det", SqlDbType.VarChar).Value = d.fechaMantenimientoDetalle;
+                                cmdD.Parameters.Add("@id_tipomoneda", SqlDbType.Int).Value = d.tipoMonedaId;
+                                cmdD.Parameters.Add("@tipocambio", SqlDbType.Decimal).Value = d.tipoCambio;
+                                cmdD.Parameters.Add("@descripcion_mant_det", SqlDbType.VarChar).Value = d.descripcion;
+                                cmdD.Parameters.Add("@cantidad_mant_det", SqlDbType.Decimal).Value = d.cantidad;
+                                cmdD.Parameters.Add("@precio_mant_det", SqlDbType.Decimal).Value = d.precio;
+                                cmdD.Parameters.Add("@total_mant_det", SqlDbType.Decimal).Value = d.total;
+                                cmdD.Parameters.Add("@descripcion_trabajo_mant_det", SqlDbType.VarChar).Value = d.descripcionTrabajo;
+                                cmdD.Parameters.Add("@estado", SqlDbType.Int).Value = d.estado;
+                                cmdD.Parameters.Add("@usuario", SqlDbType.Int).Value = d.usuario;
+
+                                SqlDataReader drD = cmdD.ExecuteReader();
+                                if (drD.HasRows)
+                                {
+                                    while (drD.Read())
+                                    {
+                                        detalle.Add(new MensajeDetalle()
+                                        {
+                                            detalleId = d.detalleId,
+                                            detalleRetornoId = drD.GetInt32(0)
+                                        });
+                                    }
+                                }
+                            }
+                            mensaje.detalle = detalle;
+                        }
+                    }
+
+                    con.Close();
+                }
+
+                return mensaje;
+            }
+            catch (Exception e)
+            {
                 throw e;
             }
         }

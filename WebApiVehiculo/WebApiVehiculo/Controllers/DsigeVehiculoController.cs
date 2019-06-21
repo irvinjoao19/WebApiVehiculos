@@ -14,8 +14,6 @@ namespace WebApiVehiculo.Controllers
 {
     public class DsigeVehiculoController : ApiController
     {
-
-
         [HttpPost]
         [Route("api/Vehiculo/Login")]
         public IHttpActionResult Usuario(Filtro f)
@@ -260,6 +258,26 @@ namespace WebApiVehiculo.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        [Route("api/Vehiculo/Mantenimiento")]
+        public IHttpActionResult Mantenimiento(MantenimientoGeneral mant)
+        {
+            try
+            {
+                Mensaje m = NegocioDao.SaveMantenimiento(mant);
+                if (m != null)
+                {
+                    return Ok(m);
+                }
+                else return BadRequest("Error");
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
 
