@@ -267,6 +267,83 @@ namespace Negocio
                                 v.checkListCabeceras = checkList;
                             }
 
+                            SqlCommand cmdMant = con.CreateCommand();
+                            cmdMant.CommandTimeout = 0;
+                            cmdMant.CommandType = CommandType.StoredProcedure;
+                            cmdMant.CommandText = "Movil_List_MantenimientoCab";
+                            cmdMant.Parameters.Add("@vehiculoId", SqlDbType.Int).Value = v.vehiculoId;
+                            cmdMant.Parameters.Add("@usuarioId", SqlDbType.Int).Value = f.usuarioId;
+                            cmdMant.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+
+
+                            SqlDataReader mant = cmdMant.ExecuteReader();
+                            if (mant.HasRows)
+                            {
+                                List<MantenimientoGeneral> mantGeneral = new List<MantenimientoGeneral>();
+
+                                while (mant.Read())
+                                {
+                                    MantenimientoGeneral m = new MantenimientoGeneral();
+                                    m.generalId = mant.GetInt32(0);
+                                    m.mantenimientoId = mant.GetInt32(0);
+                                    m.empresaId = mant.GetInt32(1);
+                                    m.tipoIE = mant.GetInt32(2);
+                                    m.tipoMantenimientoId = mant.GetInt32(3);
+                                    m.vehiculoId = mant.GetInt32(4);
+                                    m.numeroMantenimiento = mant.GetString(5);
+                                    m.fechaMantenimiento = mant.GetDateTime(6).ToString("dd/MM/yyyy");
+                                    m.solicitadoPor = mant.GetString(7);
+                                    m.trabajoMantenimiento = mant.GetString(8);
+                                    m.ruc = mant.GetString(9);
+                                    m.razonSocial = mant.GetString(10);
+                                    m.fechaInicial = mant.GetDateTime(11).ToString("dd/MM/yyyy");
+                                    m.fechaFinal = mant.GetDateTime(12).ToString("dd/MM/yyyy");
+                                    m.km = Convert.ToDecimal(mant.GetDecimal(13));
+                                    m.totalSoles = Convert.ToDecimal(mant.GetDecimal(14));
+                                    m.totalDolares = Convert.ToDecimal(mant.GetDecimal(15));
+                                    m.estado = mant.GetInt32(16);
+                                    m.usuario = mant.GetInt32(17);
+
+                                    SqlCommand cmdMantDet = con.CreateCommand();
+                                    cmdMantDet.CommandTimeout = 0;
+                                    cmdMantDet.CommandType = CommandType.StoredProcedure;
+                                    cmdMantDet.CommandText = "Movil_List_MantenimientoDet";
+                                    cmdMantDet.Parameters.Add("@mantenimientoId", SqlDbType.Int).Value = m.generalId;
+
+                                    SqlDataReader dDet = cmdMantDet.ExecuteReader();
+                                    if (dDet.HasRows)
+                                    {
+                                        List<MantenimientoDetalle> detalles = new List<MantenimientoDetalle>();
+
+                                        while (dDet.Read())
+                                        {
+                                            MantenimientoDetalle d = new MantenimientoDetalle();
+
+                                            d.detalleId = dDet.GetInt32(0);
+                                            d.mantenimientoDetalleId = dDet.GetInt32(0);
+                                            d.generalId = dDet.GetInt32(1);
+                                            d.tipoDocumentoId = dDet.GetInt32(2);
+                                            d.nombreDocumento = dDet.GetString(3);
+                                            d.numeroDocumento = dDet.GetString(4);
+                                            d.fechaMantenimientoDetalle = dDet.GetString(5);
+                                            d.tipoMonedaId = dDet.GetInt32(6);
+                                            d.nombreMoneda = dDet.GetString(7);
+                                            d.tipoCambio = Convert.ToDecimal(dDet.GetDecimal(8));
+                                            d.descripcionRespuesta = dDet.GetString(9);
+                                            d.cantidad = Convert.ToDecimal(dDet.GetDecimal(10));
+                                            d.precio = Convert.ToDecimal(dDet.GetDecimal(11));
+                                            d.total = Convert.ToDecimal(dDet.GetDecimal(12));
+                                            d.descripcionTrabajo = dDet.GetString(13);
+                                            d.estado = dDet.GetInt32(14);
+                                            d.usuario = dDet.GetInt32(15);
+                                            detalles.Add(d);
+                                        }
+                                        m.detalles = detalles;
+                                    }
+                                    mantGeneral.Add(m);
+                                }
+                                v.mantenimientos = mantGeneral;
+                            }
                             vehiculos.Add(v);
                         }
                         migracion.vehiculos = vehiculos;
@@ -1132,7 +1209,7 @@ namespace Negocio
                     cmd.CommandText = "Movil_InsertarEditar_Mantenimiento_Cab";
                     cmd.Parameters.Add("@id_Mantenimiento", SqlDbType.Int).Value = m.mantenimientoId;
                     cmd.Parameters.Add("@id_empresa", SqlDbType.Int).Value = m.empresaId;
-                    cmd.Parameters.Add("@id_tipoie", SqlDbType.VarChar).Value = m.tipoIE;
+                    cmd.Parameters.Add("@id_tipoie", SqlDbType.Int).Value = m.tipoIE;
                     cmd.Parameters.Add("@id_tipomantenimiento", SqlDbType.Int).Value = m.tipoMantenimientoId;
                     cmd.Parameters.Add("@id_vehiculo", SqlDbType.Int).Value = m.vehiculoId;
                     cmd.Parameters.Add("@numero_mant", SqlDbType.VarChar).Value = m.numeroMantenimiento;
@@ -1173,7 +1250,7 @@ namespace Negocio
                                 cmdD.Parameters.Add("@fecha_mant_det", SqlDbType.VarChar).Value = d.fechaMantenimientoDetalle;
                                 cmdD.Parameters.Add("@id_tipomoneda", SqlDbType.Int).Value = d.tipoMonedaId;
                                 cmdD.Parameters.Add("@tipocambio", SqlDbType.Decimal).Value = d.tipoCambio;
-                                cmdD.Parameters.Add("@descripcion_mant_det", SqlDbType.VarChar).Value = d.descripcion;
+                                cmdD.Parameters.Add("@descripcion_mant_det", SqlDbType.VarChar).Value = d.descripcionRespuesta;
                                 cmdD.Parameters.Add("@cantidad_mant_det", SqlDbType.Decimal).Value = d.cantidad;
                                 cmdD.Parameters.Add("@precio_mant_det", SqlDbType.Decimal).Value = d.precio;
                                 cmdD.Parameters.Add("@total_mant_det", SqlDbType.Decimal).Value = d.total;

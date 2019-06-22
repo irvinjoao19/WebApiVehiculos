@@ -11,8 +11,8 @@ namespace Contexto
         public int generalId { get; set; }
         public int mantenimientoId { get; set; }
         public int empresaId { get; set; }
-        public string tipoIE { get; set; }
-        public string tipoMantenimientoId { get; set; }
+        public int tipoIE { get; set; }
+        public int tipoMantenimientoId { get; set; }
         public int vehiculoId { get; set; }
         public string numeroMantenimiento { get; set; }
         public string fechaMantenimiento { get; set; }
