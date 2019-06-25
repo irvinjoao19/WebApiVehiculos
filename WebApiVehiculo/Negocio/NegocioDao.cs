@@ -664,6 +664,34 @@ namespace Negocio
                         migracion.monedas = monedas;
                     }
 
+                    SqlCommand cmdConductor = con.CreateCommand();
+                    cmdConductor.CommandTimeout = 0;
+                    cmdConductor.CommandType = CommandType.StoredProcedure;
+                    cmdConductor.CommandText = "Movil_List_Personal";
+                    cmdConductor.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+                    SqlDataReader drCon = cmdConductor.ExecuteReader();
+                    if (drCon.HasRows)
+                    {
+                        List<Personal> personals = new List<Personal>();
+
+                        while (drCon.Read())
+                        {
+                            personals.Add(new Personal()
+                            {
+
+                                personalId = drCon.GetInt32(0),
+                                empresaId = drCon.GetInt32(1),
+                                nroDocumento = drCon.GetString(2),
+                                tipoDoc = drCon.GetInt32(3),
+                                apellidos = drCon.GetString(4),
+                                nombres = drCon.GetString(5),
+                                cargoId = drCon.GetInt32(6)
+
+                            });
+                        }
+                        migracion.conductores = personals;
+                    }
+
                     con.Close();
                 }
                 return migracion;
