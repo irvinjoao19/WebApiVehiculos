@@ -1314,5 +1314,158 @@ namespace Negocio
             }
         }
 
+        public static Mensaje SaveInspeccion(Inspeccion i)
+        {
+            try
+            {
+                Mensaje mensaje = null;
+
+                using (SqlConnection con = new SqlConnection(db))
+                {
+                    con.Open();
+
+                    SqlCommand cmd = con.CreateCommand();
+                    cmd.CommandTimeout = 0;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "Movil_InsertarEditar_Inspeccion_Cab";
+                    cmd.Parameters.Add("@id_inspeccion", SqlDbType.Int).Value = i.inspeccionCabeceraId;
+                    cmd.Parameters.Add("@id_empresa", SqlDbType.Int).Value = i.empresaId;
+                    cmd.Parameters.Add("@id_vehiculo", SqlDbType.Int).Value = i.vehiculoId;
+                    cmd.Parameters.Add("@usuario", SqlDbType.Int).Value = i.usuarioId;
+                    cmd.Parameters.Add("@nro_inspeccion", SqlDbType.VarChar).Value = i.nroInspeccion;
+                    cmd.Parameters.Add("@id_empresa_inspeccionar", SqlDbType.Int).Value = i.empresaInspeccionId;
+                    cmd.Parameters.Add("@fecha_inspeccion", SqlDbType.VarChar).Value = i.fechaInspeccion;
+                    cmd.Parameters.Add("@sede_inspeccion", SqlDbType.VarChar).Value = i.sedeInspeccion;
+                    cmd.Parameters.Add("@fecha_rec_ope", SqlDbType.VarChar).Value = i.fechaRecibidoOpe;
+                    cmd.Parameters.Add("@km_rec_ope", SqlDbType.Decimal).Value = i.kmRecibidoOpe;
+                    cmd.Parameters.Add("@id_conductor_rec_ope", SqlDbType.Int).Value = i.conductorRecibidoOpe;
+                    cmd.Parameters.Add("@id_conbustible_rec_ope", SqlDbType.Int).Value = i.combustibleRecibidoOpe;
+                    cmd.Parameters.Add("@fecha_env_provee", SqlDbType.VarChar).Value = i.fechaEnvioProvee;
+                    cmd.Parameters.Add("@km_env_provee decimal", SqlDbType.Decimal).Value = i.kmEnvioProvee;
+                    cmd.Parameters.Add("@id_conductor_env_provee", SqlDbType.Int).Value = i.conductorEnvioProvee;
+                    cmd.Parameters.Add("@id_combustible_env_provee", SqlDbType.Int).Value = i.combustibleEnvioProvee;
+                    cmd.Parameters.Add("@fecha_ret_trans", SqlDbType.VarChar).Value = i.fechaRetiroTrans;
+                    cmd.Parameters.Add("@km_ret_trans", SqlDbType.Decimal).Value = i.kmRetiroTrans;
+                    cmd.Parameters.Add("@id_conductor_ret_trans", SqlDbType.Int).Value = i.conductorRetiroTrans;
+                    cmd.Parameters.Add("@id_conbustible_ret_trans", SqlDbType.Int).Value = i.combustibleRetiroTrans;
+                    cmd.Parameters.Add("@fecha_ent_ope", SqlDbType.VarChar).Value = i.fechaEntregaOpe;
+                    cmd.Parameters.Add("@km_ent_ope decimal", SqlDbType.Decimal).Value = i.kmEntregaOpe;
+                    cmd.Parameters.Add("@id_conductor_ent_ope", SqlDbType.Int).Value = i.conductorEntregaOpe;
+                    cmd.Parameters.Add("@id_conbustible_ent_ope", SqlDbType.Int).Value = i.combustibleEntregaOpe;
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+                    if (dr.HasRows)
+                    {
+                        mensaje = new Mensaje();
+                        while (dr.Read())
+                        {
+                            mensaje.codigoRetorno = dr.GetInt32(0);
+                            mensaje.mensaje = "Enviado";
+
+                            List<MensajeDetalle> detalle = new List<MensajeDetalle>();
+
+                            foreach (var d in i.detalles)
+                            {
+                                SqlCommand cmdD = con.CreateCommand();
+                                cmdD.CommandTimeout = 0;
+                                cmdD.CommandType = CommandType.StoredProcedure;
+                                cmdD.CommandText = "Movil_InsertarEditar_Inspeccion_Detalle";
+                                cmdD.Parameters.Add("@id_inspeccion_det", SqlDbType.Int).Value = d.inspeccionDetalleId;
+                                cmdD.Parameters.Add("@id_inspeccion", SqlDbType.Int).Value = mensaje.codigoRetorno;
+                                cmdD.Parameters.Add("@id_vehiculo", SqlDbType.Int).Value = d.vehiculoId;
+                                cmdD.Parameters.Add("@id_caracteristica", SqlDbType.Int).Value = d.caracteristicasId;
+                                cmdD.Parameters.Add("@id_estado_inspeccion", SqlDbType.Int).Value = d.estadoInspeccionId;
+                                cmdD.Parameters.Add("@fecha_inspeccion_det", SqlDbType.VarChar).Value = d.fechaInspeccionDetalle;
+                                cmdD.Parameters.Add("@obs_inspeccion_det", SqlDbType.VarChar).Value = d.observacion;
+                                cmdD.Parameters.Add("@estado", SqlDbType.Int).Value = d.estado;
+                                cmdD.Parameters.Add("@usuario", SqlDbType.Int).Value = d.usuario;
+
+                                SqlDataReader drD = cmdD.ExecuteReader();
+                                if (drD.HasRows)
+                                {
+                                    while (drD.Read())
+                                    {
+                                        detalle.Add(new MensajeDetalle()
+                                        {
+                                            detalleId = d.detalleId,
+                                            detalleRetornoId = drD.GetInt32(0),
+                                            tipo = "Detalle"
+                                        });
+                                    }
+                                }
+                            }
+
+                            foreach (var d in i.hurts)
+                            {
+                                SqlCommand cmdD = con.CreateCommand();
+                                cmdD.CommandTimeout = 0;
+                                cmdD.CommandType = CommandType.StoredProcedure;
+                                cmdD.CommandText = "Movil_InsertarEditar_Inspeccion_Control_Danio";
+                                cmdD.Parameters.Add("@controlDanioInspeccionId", SqlDbType.Int).Value = d.controlInspeccionId;
+                                cmdD.Parameters.Add("@id_inspeccion", SqlDbType.Int).Value = mensaje.codigoRetorno;
+                                cmdD.Parameters.Add("@id_tipo_ctroldanio", SqlDbType.VarChar).Value = d.tipoControlId;
+                                cmdD.Parameters.Add("@id_estado_danio", SqlDbType.Int).Value = d.estadoControlId;
+                                cmdD.Parameters.Add("@lugar_ctroldanio", SqlDbType.VarChar).Value = d.lugarControl;
+                                cmdD.Parameters.Add("@obs_ctroldanio", SqlDbType.VarChar).Value = d.observacion;
+                                cmdD.Parameters.Add("@estado", SqlDbType.Int).Value = d.estado;
+                                cmdD.Parameters.Add("@usuario", SqlDbType.Int).Value = d.usuario;
+
+                                SqlDataReader drD = cmdD.ExecuteReader();
+                                if (drD.HasRows)
+                                {
+                                    while (drD.Read())
+                                    {
+                                        detalle.Add(new MensajeDetalle()
+                                        {
+                                            detalleId = d.controlId,
+                                            detalleRetornoId = drD.GetInt32(0),
+                                            tipo = "Control"
+                                        });
+                                    }
+                                }
+                            }
+
+                            foreach (var d in i.fotos)
+                            {
+                                SqlCommand cmdD = con.CreateCommand();
+                                cmdD.CommandTimeout = 0;
+                                cmdD.CommandType = CommandType.StoredProcedure;
+                                cmdD.CommandText = "Movil_InsertarEditar_Inspeccion_Foto";
+                                cmdD.Parameters.Add("@id_inspeccion_foto", SqlDbType.Int).Value = d.inspeccionFotoId;
+                                cmdD.Parameters.Add("@id_inspeccion", SqlDbType.Int).Value = mensaje.codigoRetorno;
+                                cmdD.Parameters.Add("@nombre_foto", SqlDbType.VarChar).Value = d.nombreFoto;
+                                cmdD.Parameters.Add("@estado", SqlDbType.Int).Value = d.estado;
+                                cmdD.Parameters.Add("@usuario", SqlDbType.Int).Value = d.usuario;
+
+                                SqlDataReader drD = cmdD.ExecuteReader();
+                                if (drD.HasRows)
+                                {
+                                    while (drD.Read())
+                                    {
+                                        detalle.Add(new MensajeDetalle()
+                                        {
+                                            detalleId = d.fotoId,
+                                            detalleRetornoId = drD.GetInt32(0),
+                                            tipo = "Foto"
+                                        });
+                                    }
+                                }
+                            }
+
+                            mensaje.detalle = detalle;
+                        }
+                    }
+
+                    con.Close();
+                }
+
+                return mensaje;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
     }
 }

@@ -281,5 +281,24 @@ namespace WebApiVehiculo.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("api/Vehiculo/Inspeccion")]
+        public IHttpActionResult Inspeccion(Inspeccion insp)
+        {
+            try
+            {
+                Mensaje m = NegocioDao.SaveInspeccion(insp);
+                if (m != null)
+                {
+                    return Ok(m);
+                }
+                else return BadRequest("Error");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
     }
 }

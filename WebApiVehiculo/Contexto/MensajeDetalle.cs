@@ -9,6 +9,7 @@ namespace Contexto
     public class MensajeDetalle
     {
         public int detalleId { get; set; }
-        public int detalleRetornoId { get; set; }       
+        public int detalleRetornoId { get; set; }
+        public string tipo { get; set; }
     }
 }

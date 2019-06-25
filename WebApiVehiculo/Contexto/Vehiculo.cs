@@ -41,5 +41,6 @@ namespace Contexto
         public List<RegistroLaboral> registros { get; set; }
         public List<CheckListCabecera> checkListCabeceras { get; set; }
         public List<MantenimientoGeneral> mantenimientos { get; set; }
+        public List<Inspeccion> inspecciones { get; set; }
     }
 }
