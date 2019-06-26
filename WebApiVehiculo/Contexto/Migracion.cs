@@ -19,5 +19,6 @@ namespace Contexto
         public List<Moneda> monedas { get; set; }
         public List<TipoDocumento> documentos { get; set; }
         public List<Personal> conductores { get; set; }
+        public List<Caracteristicas> caracteristicas { get; set; }
     }
 }

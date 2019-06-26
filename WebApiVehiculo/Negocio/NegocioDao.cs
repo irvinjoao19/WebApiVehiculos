@@ -692,6 +692,37 @@ namespace Negocio
                         migracion.conductores = personals;
                     }
 
+
+                    SqlCommand cmdCaracteristicas = con.CreateCommand();
+                    cmdCaracteristicas.CommandTimeout = 0;
+                    cmdCaracteristicas.CommandType = CommandType.StoredProcedure;
+                    cmdCaracteristicas.CommandText = "Movil_List_Caracteristicas";
+                    cmdCaracteristicas.Parameters.Add("@empresaId", SqlDbType.Int).Value = f.empresaId;
+                    SqlDataReader drCaracter = cmdCaracteristicas.ExecuteReader();
+                    if (drCaracter.HasRows)
+                    {
+                        List<Caracteristicas> caracteristicas = new List<Caracteristicas>();
+
+                        while (drCaracter.Read())
+                        {
+                            caracteristicas.Add(new Caracteristicas()
+                            {
+                                caracteristicaId = drCaracter.GetInt32(0),
+                                empresaId = drCaracter.GetInt32(1),
+                                formatoId = drCaracter.GetInt32(2),
+                                titulo = drCaracter.GetInt32(3),
+                                codigoCaracteristica = drCaracter.GetString(4),
+                                descripcionCaracteristica = drCaracter.GetString(5),
+                                orden = drCaracter.GetInt32(6),
+                                aplicaFecha = drCaracter.GetInt32(7),
+                                aplicaObservacion = drCaracter.GetInt32(8),
+                                estado = drCaracter.GetInt32(9)
+
+                            });
+                        }
+                        migracion.caracteristicas = caracteristicas;
+                    }
+
                     con.Close();
                 }
                 return migracion;
